@@ -20,3 +20,5 @@ yarn-error.log
 docker-compose.yml
 .editorconfig
 phpunit.xml
+/bootstrap/cache/*.php
+

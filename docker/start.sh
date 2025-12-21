@@ -15,6 +15,8 @@ fi
 
 # Limpiar caché
 echo "🧹 Limpiando caché..."
+# Limpiar archivos de caché de bootstrap que puedan tener referencias a dev dependencies
+rm -f /var/www/html/bootstrap/cache/*.php
 php artisan config:clear
 php artisan cache:clear
 php artisan view:clear
