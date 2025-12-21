@@ -15,7 +15,7 @@ services:
             - APP_DEBUG=true
             - APP_URL=http://localhost:8080
             - DB_CONNECTION=pgsql
-            - DB_HOST=ep-empty-heart-adji88vi-pooler.c-2.us-east-1.aws.neon.tech
+            - DB_HOST=ep-empty-heart-adji88vi.c-2.us-east-1.aws.neon.tech
             - DB_PORT=5432
             - DB_DATABASE=neondb
             - DB_USERNAME=neondb_owner
