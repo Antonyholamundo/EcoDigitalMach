@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: ecoproyecto_app
+        restart: unless-stopped
+        ports:
+            - "8080:80"
+        environment:
+            - APP_NAME=EcoProyecto
+            - APP_ENV=local
+            - APP_DEBUG=true
+            - APP_URL=http://localhost:8080
+            - DB_CONNECTION=pgsql
+            - DB_HOST=ep-empty-heart-adji88vi-pooler.c-2.us-east-1.aws.neon.tech
+            - DB_PORT=5432
+            - DB_DATABASE=neondb
+            - DB_USERNAME=neondb_owner
+            - DB_PASSWORD=npg_7numV2SfEzaO
+            - DB_SSLMODE=require
+            - SESSION_DRIVER=database
+            - CACHE_STORE=database
+            - QUEUE_CONNECTION=database
+        volumes:
+            - ./storage:/var/www/html/storage
+            - ./database:/var/www/html/database
+        networks:
+            - ecoproyecto
+
+networks:
+    ecoproyecto:
+        driver: bridge

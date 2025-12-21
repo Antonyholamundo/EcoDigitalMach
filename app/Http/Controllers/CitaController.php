@@ -10,8 +10,16 @@ class CitaController extends Controller
 
     public function index()
     {
-        $citas = Cita::all();
-    return view('logica.citas', compact('citas'));
+        // Mostrar solo pendientes (o no atendidos) en la vista principal
+        $citas = Cita::where('estado', '!=', 'atendido')->get();
+        return view('logica.citas', compact('citas'));
+    }
+
+    public function atendidos()
+    {
+        // Mostrar solo atendidos
+        $citas = Cita::where('estado', 'atendido')->get();
+        return view('logica.atendidos', compact('citas')); // Nueva vista
     }
 
     /**
@@ -74,9 +82,18 @@ class CitaController extends Controller
 
     public function destroy(string $id)
     {
-   $cita = Cita::findOrFail($id);
-    $cita->delete();
+       $cita = Cita::findOrFail($id);
+        $cita->delete();
 
-    return redirect()->route('logica.citas')->with('success', 'Cita eliminada correctamentes.');
+        return redirect()->route('logica.citas')->with('success', 'Cita eliminada correctamente.');
+    }
+
+    public function toggleStatus($id)
+    {
+        $cita = Cita::findOrFail($id);
+        $cita->estado = $cita->estado === 'atendido' ? 'pendiente' : 'atendido';
+        $cita->save();
+
+        return redirect()->back()->with('success', 'Estado de la cita actualizado correctamente.');
     }
 }

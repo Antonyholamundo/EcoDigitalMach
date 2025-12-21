@@ -5,28 +5,29 @@ use App\Http\Controllers\CitaController;
 use App\Http\Controllers\PacienteController;
 use App\Http\Controllers\ReporteController;
 
-Route::get('/lo
-
-gin', function () {
-    return view('logica.login');
-});
-
+// Ruta para citas atendidas (pacientes atendidos)
+Route::get('/citas/atendidos', [CitaController::class, 'atendidos'])->name('citas.atendidos');
+Route::post('/citas/{id}/toggle-status', [CitaController::class, 'toggleStatus'])->name('citas.toggleStatus');
 
 // Usar el resource completo
 Route::resource('citas', CitaController::class)
     ->names([
         'index' => 'logica.citas',
     ]);
+
 Route::resource('pacientes', PacienteController::class)
     ->names([
         'index' => 'logica.pacientes',
     ]);
 
-    Route::get('/', function () {
+Route::get('/', function () {
     return view('logica.index'); 
 });
 
 Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
+Route::get('/login', function () {
+    return view('logica.login');
+});
 Route::get('/reportes/pacientes/pdf', [ReporteController::class, 'pacientesPdf'])->name('reportes.pacientes.pdf');
 Route::get('/reportes/pacientes/excel', [ReporteController::class, 'pacientesExcel'])->name('reportes.pacientes.excel');
 Route::get('/reportes/pacientes/csv', [ReporteController::class, 'pacientesCsv'])->name('reportes.pacientes.csv');

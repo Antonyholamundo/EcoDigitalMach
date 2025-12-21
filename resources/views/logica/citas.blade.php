@@ -1,82 +1,24 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Gestión de Pacientes</title>
+@extends('layouts.app')
 
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
-  <link rel="stylesheet" href="{{ asset('css/style.css') }}" />
+@section('title', 'Agendar Cita')
 
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
-
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-    }
-  </style>
-</head>
-
-<body class="d-flex flex-column min-vh-100">
-
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-    <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="#">
-        <img src="{{ asset('img/logo.png') }}" alt="Logo Ecografía Digital Machala" style="height: 40px;" class="me-2" />
-        <span class="fw-semibold text-primary">Ecografía Digital</span>
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav me-auto">
-          <li class="nav-item"><a class="nav-link text-dark" href="{{ url('/') }}">Inicio</a></li>
-          <li class="nav-item"><a class="nav-link text-dark" href="{{ route('logica.citas') }}">Agendar Cita</a></li>
-          <li class="nav-item"><a class="nav-link text-dark" href="{{ route('logica.pacientes') }}">Pacientes</a></li>
-          <li class="nav-item"><a class="nav-link text-dark" href="{{ route('reportes.index') }}">Reportes</a></li>
-        </ul>
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="bi bi-gear-fill me-1"></i> Opciones
-            </a>
-            <!-- Aquí puedes poner tu menú si lo usas -->
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-
+@section('content')
   <!-- Contenido principal -->
   <div class="container my-5">
-    <h1 class="fw-bold text-primary mb-4">Agendar Cita</h1>
-
-    @if (session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-
-    @if ($errors->any())
-    <div class="alert alert-danger">
-      <strong>Ups, hubo algunos errores:</strong>
-      <ul class="mb-0">
-        @foreach ($errors->all() as $error)
-        <li>{{ $error }}</li>
-        @endforeach
-      </ul>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="fw-bold text-primary">Agendar Cita</h1>
+      <div>
+          <a href="{{ route('citas.atendidos') }}" class="btn btn-outline-success me-2">
+            <i class="bi bi-check-circle"></i> Ver Atendidos
+          </a>
+          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalAgendarCita">
+            <i class="bi bi-person-plus"></i> Agregar Cita
+          </button>
+      </div>
     </div>
-    @endif
 
-    <button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#modalAgendarCita">
-      <i class="bi bi-person-plus"></i> Agregar Cita
-    </button>
-
-    <div class="table-responsive">
-      <table class="table table-bordered table-hover align-middle">
+    <div class="table-responsive shadow-sm rounded">
+      <table class="table table-bordered table-hover align-middle mb-0">
         <thead class="table-primary">
           <tr>
             <th>Nombre del Paciente</th>
@@ -88,7 +30,7 @@
             <th>Acciones</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody class="bg-white">
           @forelse ($citas as $cita)
           <tr>
             <td>{{ $cita->paciente }}</td>
@@ -96,10 +38,26 @@
             <td>{{ $cita->tipo }}</td>
             <td>{{ $cita->hora }}</td>
             <td>${{ number_format($cita->precio, 2) }}</td>
-            <td>{{ ucfirst($cita->estado) }}</td>
+            <td>
+              <form action="{{ route('citas.toggleStatus', $cita->id) }}" method="POST" id="form-status-{{ $cita->id }}">
+                  @csrf
+                  <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" role="switch"
+                             onchange="document.getElementById('form-status-{{ $cita->id }}').submit()"
+                             {{ $cita->estado == 'atendido' ? 'checked' : '' }}>
+                      <label class="form-check-label">
+                          @if($cita->estado == 'atendido')
+                              <span class="text-success fw-bold">Atendido</span>
+                          @else
+                              <span class="text-warning fw-bold">Pendiente</span>
+                          @endif
+                      </label>
+                  </div>
+              </form>
+            </td>
             <td>
               <button
-                class="btn btn-warning btn-sm text-white btn-editar"
+                class="btn btn-warning btn-sm text-white btn-editar me-1"
                 data-id="{{ $cita->id }}"
                 data-paciente="{{ $cita->paciente }}"
                 data-fecha="{{ $cita->fecha }}"
@@ -110,7 +68,7 @@
                 data-bs-toggle="modal"
                 data-bs-target="#modalEditarCita"
               >
-                <i class="bi bi-pencil-square"></i> Editar
+                <i class="bi bi-pencil-square"></i>
               </button>
 
               <form action="{{ route('citas.destroy', $cita->id) }}" method="POST" class="d-inline"
@@ -118,14 +76,14 @@
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn btn-danger btn-sm">
-                  <i class="bi bi-trash"></i> Eliminar
+                  <i class="bi bi-trash"></i>
                 </button>
               </form>
             </td>
           </tr>
           @empty
           <tr>
-            <td colspan="7" class="text-center">No hay citas agendadas</td>
+            <td colspan="7" class="text-center py-4 text-muted">No hay citas agendadas</td>
           </tr>
           @endforelse
         </tbody>
@@ -204,22 +162,44 @@
           @csrf
           @method('PUT')
           <div class="modal-body p-3">
-            <input id="edit-nombre-paciente" name="paciente" type="text" class="form-control form-control-sm mb-2" required>
-            <input id="edit-fecha-cita" name="fecha" type="date" class="form-control form-control-sm mb-2" required>
-            <input id="edit-hora-cita" name="hora" type="time" class="form-control form-control-sm mb-2" required>
-            <select id="edit-tipo-ecografia" name="tipo" class="form-select form-select-sm mb-2" required>
-              <option value="">Seleccione</option>
-              <option value="Abdominal">Abdominal</option>
-              <option value="Obstétrica">Obstétrica</option>
-              <option value="Mamaria">Mamaria</option>
-              <option value="Tiroidea">Tiroidea</option>
-            </select>
-            <input id="edit-precio" name="precio" type="number" step="0.01" class="form-control form-control-sm mb-2" required>
-            <select id="edit-estado-paciente" name="estado" class="form-select form-select-sm mb-2" required>
-              <option value="">Seleccione</option>
-              <option value="pendiente">Pendiente</option>
-              <option value="atendido">Atendido</option>
-            </select>
+            <div class="mb-2">
+               <label class="form-label">Paciente</label>
+               <input id="edit-nombre-paciente" name="paciente" type="text" class="form-control form-control-sm" required>
+            </div>
+            <div class="row">
+                <div class="col-6 mb-2">
+                    <label class="form-label">Fecha</label>
+                    <input id="edit-fecha-cita" name="fecha" type="date" class="form-control form-control-sm" required>
+                </div>
+                <div class="col-6 mb-2">
+                    <label class="form-label">Hora</label>
+                    <input id="edit-hora-cita" name="hora" type="time" class="form-control form-control-sm" required>
+                </div>
+            </div>
+            <div class="mb-2">
+                <label class="form-label">Tipo</label>
+                <select id="edit-tipo-ecografia" name="tipo" class="form-select form-select-sm" required>
+                  <option value="">Seleccione</option>
+                  <option value="Abdominal">Abdominal</option>
+                  <option value="Obstétrica">Obstétrica</option>
+                  <option value="Mamaria">Mamaria</option>
+                  <option value="Tiroidea">Tiroidea</option>
+                </select>
+            </div>
+            <div class="row">
+                <div class="col-6 mb-2">
+                    <label class="form-label">Precio</label>
+                    <input id="edit-precio" name="precio" type="number" step="0.01" class="form-control form-control-sm" required>
+                </div>
+                <div class="col-6 mb-2">
+                    <label class="form-label">Estado</label>
+                    <select id="edit-estado-paciente" name="estado" class="form-select form-select-sm" required>
+                      <option value="">Seleccione</option>
+                      <option value="pendiente">Pendiente</option>
+                      <option value="atendido">Atendido</option>
+                    </select>
+                </div>
+            </div>
           </div>
           <div class="modal-footer py-2">
             <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
@@ -229,29 +209,9 @@
       </div>
     </div>
   </div>
+@endsection
 
-  <!-- Footer -->
-  <footer class="bg-primary text-white mt-auto">
-    <div class="container py-4">
-      <div class="row">
-        <div class="col-md-6">
-          <h5>Contacto</h5>
-          <p>Dirección: Buenavista y Boyaca</p>
-          <p>Teléfono: 0963947466</p>
-          <p>Email: ecografiadigitalmachala@gmail.com</p>
-        </div>
-        <div class="col-md-6">
-          <h5>Horario de Atención</h5>
-          <p>Lunes a Viernes: 8:00 AM - 6:00 PM</p>
-          <p>Sábado: 9:00 AM - 1:00 PM</p>
-        </div>
-      </div>
-    </div>
-  </footer>
-
-  <!-- Bootstrap Bundle -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
+@push('scripts')
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       const btnsEditar = document.querySelectorAll('.btn-editar');
@@ -270,33 +230,4 @@
       });
     });
   </script>
-
-</body>
-<div class="toast-container position-fixed bottom-0 end-0 p-3">
-  @if(session('success'))
-    <div class="toast align-items-center text-bg-success border-0 show" role="alert">
-      <div class="d-flex">
-        <div class="toast-body">
-          {{ session('success') }}
-        </div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-      </div>
-    </div>
-  @endif
-  @if($errors->any())
-    <div class="toast align-items-center text-bg-danger border-0 show" role="alert">
-      <div class="d-flex">
-        <div class="toast-body">
-          <strong>Ups, hubo algunos errores:</strong>
-          <ul class="mb-0">
-            @foreach ($errors->all() as $error)
-              <li>{{ $error }}</li>
-            @endforeach
-          </ul>
-        </div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-      </div>
-    </div>
-  @endif
-</div>
-</html>
+@endpush
