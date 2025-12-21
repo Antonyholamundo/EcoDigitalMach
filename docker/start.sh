@@ -12,10 +12,19 @@ rm -f /var/www/html/bootstrap/cache/*.php
 # Esperar un momento para asegurar que todo esté listo
 sleep 2
 
-# Generar clave de aplicación si no existe
+# Crear archivo .env si no existe (necesario para algunos comandos de artisan)
+if [ ! -f .env ]; then
+    echo "📄 Creando archivo .env desde .env.example..."
+    cp .env.example .env
+fi
+
+# Verificar APP_KEY
 if [ -z "$APP_KEY" ]; then
-    echo "📝 Generando APP_KEY..."
+    echo "⚠️ Advertencia: APP_KEY no está configurada en las variables de entorno."
+    echo "Intentando generarla..."
     php artisan key:generate --force
+else
+    echo "✅ APP_KEY encontrada en variables de entorno."
 fi
 
 # Limpiar caché artisan
