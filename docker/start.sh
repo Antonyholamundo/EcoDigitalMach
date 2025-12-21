@@ -4,6 +4,11 @@ set -e
 
 echo "🚀 Iniciando aplicación Laravel..."
 
+# 🧹 IMPORTANTE: Limpiar caché DE INMEDIATO antes de cualquier comando artisan
+# Esto previene errores si hay referencias a dependencias de desarrollo (como Pail)
+echo "🧹 Limpiando caché de bootstrap..."
+rm -f /var/www/html/bootstrap/cache/*.php
+
 # Esperar un momento para asegurar que todo esté listo
 sleep 2
 
@@ -13,10 +18,8 @@ if [ -z "$APP_KEY" ]; then
     php artisan key:generate --force
 fi
 
-# Limpiar caché
-echo "🧹 Limpiando caché..."
-# Limpiar archivos de caché de bootstrap que puedan tener referencias a dev dependencies
-rm -f /var/www/html/bootstrap/cache/*.php
+# Limpiar caché artisan
+echo "🧹 Limpiando caché de configuración..."
 php artisan config:clear
 php artisan cache:clear
 php artisan view:clear
