@@ -47,7 +47,7 @@
         <ul class="navbar-nav ms-auto">
           @guest
               <li class="nav-item">
-                  <a class="nav-link btn btn-primary text-white px-3 ms-2" href="{{ route('login') }}">Iniciar Sesión</a>
+                  <a class="btn btn-primary text-white px-4 py-2" href="{{ route('login') }}" style="border-radius: 8px;">Iniciar Sesión</a>
               </li>
           @endguest
           @auth
