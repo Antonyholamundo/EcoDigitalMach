@@ -51,20 +51,22 @@ Route::get('/install-admin', function () {
         \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
         $output .= "<pre>" . \Illuminate\Support\Facades\Artisan::output() . "</pre>";
 
-        // 4. Crear usuario
-        $output .= "<h3>4. Creación de Usuario</h3>";
-        if (!\App\Models\User::where('email', 'admin@ecodigital.com')->exists()) {
-            \App\Models\User::create([
+        // 4. Crear o Actualizar usuario (FORZADO)
+        $output .= "<h3>4. Creación/Actualización de Usuario</h3>";
+        
+        $user = \App\Models\User::updateOrCreate(
+            ['email' => 'admin@ecodigital.com'],
+            [
                 'name' => 'Administrador',
-                'email' => 'admin@ecodigital.com',
                 'password' => \Illuminate\Support\Facades\Hash::make('admin123'),
-            ]);
-            $output .= "<p style='color:green'>Usuario creado exitosamente.</p>";
-        } else {
-            $output .= "<p style='color:blue'>El usuario ya existe.</p>";
-        }
+                'email_verified_at' => now(), // Marcar como verificado por si acaso
+            ]
+        );
 
-        $output .= "<hr><a href='/login' style='font-size:20px'><b>IR AL LOGIN</b></a>";
+        $output .= "<p style='color:green; font-size: 1.2em;'><strong>¡ÉXITO! Usuario 'admin@ecodigital.com' asegurado con contraseña 'admin123'.</strong></p>";
+        $output .= "<p>ID del usuario: " . $user->id . "</p>";
+
+        $output .= "<hr><a href='/login' style='font-size:20px; background: blue; color: white; padding: 10px; text-decoration: none; border-radius: 5px;'>IR AL LOGIN AHORA</a>";
 
     } catch (\Exception $e) {
         $output .= "<h2 style='color:red'>FALLÓ: " . $e->getMessage() . "</h2>";
