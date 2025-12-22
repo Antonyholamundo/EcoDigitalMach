@@ -28,7 +28,7 @@
   <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center" href="{{ url('/') }}">
-        <img src="{{ asset('img/logo.png') }}" alt="Logo Ecografía Digital Machala" style="height: 40px;" class="me-2" />
+        <img src="{{ asset('img/logo.png') }}" alt="Logo Ecografía Digital Machala" class="me-2 logo-brand" />
         <span class="fw-semibold text-primary">Ecografía Digital</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">

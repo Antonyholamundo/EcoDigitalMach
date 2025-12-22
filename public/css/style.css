@@ -67,3 +67,22 @@
         justify-content: flex-end;
     }
 }
+
+/* =========================================
+   Logo Responsivo
+   ========================================= */
+.logo-brand {
+    height: 40px;
+    width: auto;
+    transition: height 0.3s ease;
+}
+
+@media (max-width: 576px) {
+    .logo-brand {
+        height: 30px; /* Reducir en móviles para evitar desbordes */
+    }
+
+    .navbar-brand span {
+        font-size: 1rem; /* Ajustar texto ligeramente */
+    }
+}
