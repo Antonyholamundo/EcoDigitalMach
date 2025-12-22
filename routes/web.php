@@ -16,20 +16,35 @@ Route::get('/', function () {
     return view('logica.index'); 
 });
 
-// RUTA TEMPORAL - Solo para crear el usuario si no tienes acceso a Shell
+// RUTA TEMPORAL - Para diagnosticar y arreglar BD
 Route::get('/install-admin', function () {
     try {
+        // 1. Intentar correr migraciones
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        $migrateOutput = \Illuminate\Support\Facades\Artisan::output();
+
+        // 2. Crear usuario si no existe
+        $userStatus = "";
         if (!\App\Models\User::where('email', 'admin@ecodigital.com')->exists()) {
             \App\Models\User::create([
                 'name' => 'Administrador',
                 'email' => 'admin@ecodigital.com',
                 'password' => \Illuminate\Support\Facades\Hash::make('admin123'),
             ]);
-            return 'Usuario Administrador creado correctamente. <a href="/login">Ir al Login</a>';
+            $userStatus = "Usuario creado exitosamente.";
+        } else {
+            $userStatus = "Usuario ya existía.";
         }
-        return 'El usuario Administrador YA existe. <a href="/login">Ir al Login</a>';
+
+        return "<h1>Diagnóstico de Instalación</h1>" .
+               "<h3>Migraciones:</h3><pre>$migrateOutput</pre>" .
+               "<h3>Usuario:</h3><p>$userStatus</p>" .
+               "<hr><a href='/login'>Ir al Login</a>";
+
     } catch (\Exception $e) {
-        return 'Error: ' . $e->getMessage();
+        return "<h1>Error Crítico</h1>" .
+               "<p>" . $e->getMessage() . "</p>" .
+               "<h3>Trace:</h3><pre>" . $e->getTraceAsString() . "</pre>";
     }
 });
 
