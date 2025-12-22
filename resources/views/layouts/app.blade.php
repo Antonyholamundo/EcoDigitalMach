@@ -38,23 +38,37 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav me-auto">
           <li class="nav-item"><a class="nav-link text-dark" href="{{ url('/') }}">Inicio</a></li>
-          <li class="nav-item"><a class="nav-link text-dark" href="{{ route('logica.citas') }}">Agendar Cita</a></li>
-          <li class="nav-item"><a class="nav-link text-dark" href="{{ route('logica.pacientes') }}">Pacientes</a></li>
-          <li class="nav-item"><a class="nav-link text-dark" href="{{ route('reportes.index') }}">Reportes</a></li>
+          @auth
+              <li class="nav-item"><a class="nav-link text-dark" href="{{ route('logica.citas') }}">Agendar Cita</a></li>
+              <li class="nav-item"><a class="nav-link text-dark" href="{{ route('logica.pacientes') }}">Pacientes</a></li>
+              <li class="nav-item"><a class="nav-link text-dark" href="{{ route('reportes.index') }}">Reportes</a></li>
+          @endauth
         </ul>
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="bi bi-gear-fill me-1"></i> Opciones
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-              <li><a class="dropdown-item" href="#"><i class="bi bi-cog me-2"></i>Configuración</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li>
-                <a class="dropdown-item text-danger" href="/login"><i class="bi bi-box-arrow-right me-2"></i>Salir</a>
+          @guest
+              <li class="nav-item">
+                  <a class="nav-link btn btn-primary text-white px-3 ms-2" href="{{ route('login') }}">Iniciar Sesión</a>
               </li>
-            </ul>
-          </li>
+          @endguest
+          @auth
+              <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-person-circle me-1"></i> {{ Auth::user()->name ?? 'Administrador' }}
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                  <li><a class="dropdown-item" href="#"><i class="bi bi-cog me-2"></i>Configuración</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                    <form action="{{ route('logout') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="dropdown-item text-danger">
+                            <i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión
+                        </button>
+                    </form>
+                  </li>
+                </ul>
+              </li>
+          @endauth
         </ul>
       </div>
     </div>

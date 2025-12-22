@@ -4,31 +4,33 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CitaController;
 use App\Http\Controllers\PacienteController;
 use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\AuthController;
 
-// Ruta para citas atendidas (pacientes atendidos)
-Route::get('/citas/atendidos', [CitaController::class, 'atendidos'])->name('citas.atendidos');
-Route::post('/citas/{id}/toggle-status', [CitaController::class, 'toggleStatus'])->name('citas.toggleStatus');
+// Rutas de Autenticación
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Usar el resource completo
-Route::resource('citas', CitaController::class)
-    ->names([
-        'index' => 'logica.citas',
-    ]);
-
-Route::resource('pacientes', PacienteController::class)
-    ->names([
-        'index' => 'logica.pacientes',
-    ]);
-
+// Página de inicio pública
 Route::get('/', function () {
     return view('logica.index'); 
 });
 
-Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
-Route::get('/login', function () {
-    return view('logica.login');
+// Rutas Protegidas (Solo usuarios logueados)
+Route::middleware('auth')->group(function () {
+    
+    // Citas
+    Route::get('/citas/atendidos', [CitaController::class, 'atendidos'])->name('citas.atendidos');
+    Route::post('/citas/{id}/toggle-status', [CitaController::class, 'toggleStatus'])->name('citas.toggleStatus');
+    Route::resource('citas', CitaController::class)->names(['index' => 'logica.citas']);
+
+    // Pacientes
+    Route::resource('pacientes', PacienteController::class)->names(['index' => 'logica.pacientes']);
+
+    // Reportes
+    Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
+    Route::get('/reportes/pacientes/pdf', [ReporteController::class, 'pacientesPdf'])->name('reportes.pacientes.pdf');
+    Route::get('/reportes/pacientes/excel', [ReporteController::class, 'pacientesExcel'])->name('reportes.pacientes.excel');
+    Route::get('/reportes/pacientes/csv', [ReporteController::class, 'pacientesCsv'])->name('reportes.pacientes.csv');
 });
-Route::get('/reportes/pacientes/pdf', [ReporteController::class, 'pacientesPdf'])->name('reportes.pacientes.pdf');
-Route::get('/reportes/pacientes/excel', [ReporteController::class, 'pacientesExcel'])->name('reportes.pacientes.excel');
-Route::get('/reportes/pacientes/csv', [ReporteController::class, 'pacientesCsv'])->name('reportes.pacientes.csv');
 

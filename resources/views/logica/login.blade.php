@@ -35,23 +35,35 @@
   <div class="login-container">
     <h1 class="text-center mb-4">Iniciar Sesión</h1>
 
-    <form>
+    <form action="{{ route('login') }}" method="POST">
+      @csrf
+
+      @if ($errors->any())
+        <div class="alert alert-danger">
+          <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+              <li>{{ $error }}</li>
+            @endforeach
+          </ul>
+        </div>
+      @endif
+
       <div class="mb-3">
         <label for="email" class="form-label">Correo Electrónico</label>
-        <input type="email" id="email" class="form-control" placeholder="usuario@ejemplo.com" required>
+        <input type="email" id="email" name="email" class="form-control" placeholder="usuario@ejemplo.com" value="{{ old('email') }}" required autofocus>
       </div>
 
       <div class="mb-3">
         <label for="password" class="form-label">Contraseña</label>
-        <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+        <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
       </div>
 
-      <button type="button" class="btn btn-primary w-100" onclick="window.location.href='/'">
+      <button type="submit" class="btn btn-primary w-100">
         Ingresar
       </button>
 
       <p class="text-center mt-3 text-muted">
-        ¿No tienes una cuenta? <a href="#">Regístrate</a>
+        ¿No tienes una cuenta? <span class="text-secondary">Contacta al administrador</span>
       </p>
     </form>
   </div>
