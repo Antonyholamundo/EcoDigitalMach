@@ -51,23 +51,46 @@ Route::get('/install-admin', function () {
         \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
         $output .= "<pre>" . \Illuminate\Support\Facades\Artisan::output() . "</pre>";
 
-        // 4. Crear o Actualizar usuario (FORZADO)
+        // 4. Crear o Actualizar usuario
         $output .= "<h3>4. Creación/Actualización de Usuario</h3>";
+        $output .= "<p>Laravel Version: " . app()->version() . "</p>";
         
+        // Intentamos PRIMERO asumiendo que el modelo tiene 'hashed' cast
         $user = \App\Models\User::updateOrCreate(
             ['email' => 'admin@ecodigital.com'],
             [
                 'name' => 'Administrador',
-                // IMPORTANTE: El modelo User tiene 'password' => 'hashed' en los casts.
-                // NO debemos usar Hash::make() aquí o se hasheará dos veces.
-                'password' => 'admin123', 
+                'password' => 'admin123', // Intentamos texto plano primero
                 'email_verified_at' => now(),
             ]
         );
 
-        $output .= "<p style='color:green; font-size: 1.2em;'><strong>¡ÉXITO! Usuario 'admin@ecodigital.com' asegurado con contraseña 'admin123'.</strong></p>";
-        $output .= "<p>ID del usuario: " . $user->id . "</p>";
-        $output .= "<p><i>Nota: Se usó asignación directa (sin Hash::make manual) para evitar doble hash por el cast del modelo.</i></p>";
+        // VERIFICACIÓN INMEDIATA
+        $freshUser = \App\Models\User::find($user->id);
+        $storedHash = $freshUser->getAttributes()['password']; // Acceder al atributo crudo
+        $isHashed = strlen($storedHash) > 50 && str_starts_with($storedHash, '$2y$');
+        $checkPass = \Illuminate\Support\Facades\Hash::check('admin123', $storedHash);
+
+        $output .= "<ul>";
+        $output .= "<li><strong>Valor guardado (Raw):</strong> " . substr($storedHash, 0, 10) . "... (" . strlen($storedHash) . " chars)</li>";
+        $output .= "<li><strong>¿Parece Hasheado?</strong> " . ($isHashed ? "SÍ" : "NO (Texto Plano)") . "</li>";
+        $output .= "<li><strong>Hash::check('admin123'):</strong> " . ($checkPass ? "<span style='color:green; font-weight:bold'>PASÓ (Correcto)</span>" : "<span style='color:red; font-weight:bold'>FALLÓ</span>") . "</li>";
+        $output .= "</ul>";
+
+        // Si falló, significa que el cast 'hashed' NO funcionó (ej. Laravel 10 con sintaxis de Laravel 11, o modelo defectuoso).
+        // Intentamos corregir MANUALMENTE.
+        if (!$checkPass) {
+             $output .= "<p style='color:orange'><strong>Detectado fallo en auto-hashing. Aplicando Hash::make manual...</strong></p>";
+             $user->password = \Illuminate\Support\Facades\Hash::make('admin123');
+             $user->save();
+             
+             // Re-verificar
+             $freshUser = \App\Models\User::find($user->id);
+             $storedHash = $freshUser->getAttributes()['password'];
+             $checkPass = \Illuminate\Support\Facades\Hash::check('admin123', $storedHash);
+             
+             $output .= "<ul><li><strong>Re-Verificación Hash::check:</strong> " . ($checkPass ? "<span style='color:green'>AHORA SÍ FUNCIONA</span>" : "<span style='color:red'>SIGUE FALLANDO</span>") . "</li></ul>";
+        }
 
         $output .= "<hr><a href='/login' style='font-size:20px; background: blue; color: white; padding: 10px; text-decoration: none; border-radius: 5px;'>IR AL LOGIN AHORA</a>";
 
