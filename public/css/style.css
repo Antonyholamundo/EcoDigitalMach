@@ -80,6 +80,7 @@
 @media (max-width: 576px) {
     .logo-brand {
         height: 30px; /* Reducir en móviles para evitar desbordes */
+        margin-top: 2px; /* Ajuste visual para alinear con el texto */
     }
 
     .navbar-brand span {
