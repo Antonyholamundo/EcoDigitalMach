@@ -58,13 +58,16 @@ Route::get('/install-admin', function () {
             ['email' => 'admin@ecodigital.com'],
             [
                 'name' => 'Administrador',
-                'password' => \Illuminate\Support\Facades\Hash::make('admin123'),
-                'email_verified_at' => now(), // Marcar como verificado por si acaso
+                // IMPORTANTE: El modelo User tiene 'password' => 'hashed' en los casts.
+                // NO debemos usar Hash::make() aquí o se hasheará dos veces.
+                'password' => 'admin123', 
+                'email_verified_at' => now(),
             ]
         );
 
         $output .= "<p style='color:green; font-size: 1.2em;'><strong>¡ÉXITO! Usuario 'admin@ecodigital.com' asegurado con contraseña 'admin123'.</strong></p>";
         $output .= "<p>ID del usuario: " . $user->id . "</p>";
+        $output .= "<p><i>Nota: Se usó asignación directa (sin Hash::make manual) para evitar doble hash por el cast del modelo.</i></p>";
 
         $output .= "<hr><a href='/login' style='font-size:20px; background: blue; color: white; padding: 10px; text-decoration: none; border-radius: 5px;'>IR AL LOGIN AHORA</a>";
 
