@@ -90,6 +90,73 @@ Route::get('/install-admin', function () {
     return $output;
 });
 
+// RUTA DE DIAGNÓSTICO - Probar Auth::attempt directamente
+Route::get('/test-login', function () {
+    $output = "<h1>Test de Auth::attempt</h1>";
+    
+    try {
+        // 1. Verificar que el usuario existe
+        $user = \Illuminate\Support\Facades\DB::table('users')
+            ->where('email', 'admin@ecodigital.com')
+            ->first();
+        
+        if (!$user) {
+            return "<p style='color:red'>ERROR: El usuario admin@ecodigital.com NO existe en la BD. Visita /install-admin primero.</p>";
+        }
+        
+        $output .= "<h3>1. Usuario en BD</h3>";
+        $output .= "<ul>";
+        $output .= "<li>Email: " . $user->email . "</li>";
+        $output .= "<li>Hash: " . substr($user->password, 0, 30) . "...</li>";
+        $output .= "</ul>";
+        
+        // 2. Verificar Hash manualmente
+        $output .= "<h3>2. Verificación Manual de Hash</h3>";
+        $manualCheck = \Illuminate\Support\Facades\Hash::check('admin123', $user->password);
+        $output .= "<p>Hash::check('admin123', hash_de_bd): <strong style='color:" . ($manualCheck ? "green'>✓ PASA" : "red'>✗ FALLA") . "</strong></p>";
+        
+        // 3. Intentar Auth::attempt
+        $output .= "<h3>3. Test de Auth::attempt</h3>";
+        $credentials = [
+            'email' => 'admin@ecodigital.com',
+            'password' => 'admin123'
+        ];
+        
+        $attemptResult = \Illuminate\Support\Facades\Auth::attempt($credentials);
+        
+        $output .= "<p>Auth::attempt(credentials): <strong style='color:" . ($attemptResult ? "green'>✓ ÉXITO" : "red'>✗ FALLÓ") . "</strong></p>";
+        
+        if ($attemptResult) {
+            $output .= "<div style='background:green; color:white; padding:20px; margin:20px 0;'>";
+            $output .= "<h2>¡Auth::attempt FUNCIONA!</h2>";
+            $output .= "<p>El problema NO es la autenticación. Puede ser:</p>";
+            $output .= "<ul><li>Sesiones no configuradas en Render</li>";
+            $output .= "<li>APP_KEY no configurada</li>";
+            $output .= "<li>Cookies bloqueadas</li></ul>";
+            $output .= "</div>";
+            
+            // Logout para poder probar de nuevo
+            \Illuminate\Support\Facades\Auth::logout();
+        } else {
+            $output .= "<div style='background:red; color:white; padding:20px; margin:20px 0;'>";
+            $output .= "<h2>Auth::attempt FALLÓ</h2>";
+            $output .= "<p>Pero Hash::check " . ($manualCheck ? "SÍ funciona" : "también falló") . ".</p>";
+            $output .= "<p>Esto sugiere un problema con la configuración de Auth en Laravel.</p>";
+            $output .= "</div>";
+        }
+        
+        $output .= "<hr><a href='/login'>Ir al Login</a> | <a href='/install-admin'>Reinstalar Usuario</a>";
+        
+    } catch (\Exception $e) {
+        $output .= "<div style='background:red; color:white; padding:20px;'>";
+        $output .= "<h2>Error</h2>";
+        $output .= "<p>" . $e->getMessage() . "</p>";
+        $output .= "</div>";
+    }
+    
+    return $output;
+});
+
 // Rutas Protegidas (Solo usuarios logueados)
 Route::middleware('auth')->group(function () {
     
