@@ -16,36 +16,62 @@ Route::get('/', function () {
     return view('logica.index'); 
 });
 
-// RUTA TEMPORAL - Para diagnosticar y arreglar BD
+// RUTA TEMPORAL - Diagnóstico PROFUNDO
 Route::get('/install-admin', function () {
-    try {
-        // 1. Intentar correr migraciones
-        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-        $migrateOutput = \Illuminate\Support\Facades\Artisan::output();
+    $output = "<h1>Diagnóstico Profundo de Sistema</h1>";
+    
+    // 1. Verificar Variables de Entorno
+    $envVars = ['DB_CONNECTION', 'DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD'];
+    $output .= "<h3>1. Verificación de Entorno (.env)</h3><ul>";
+    foreach ($envVars as $var) {
+        $val = env($var);
+        $status = !empty($val) ? "<span style='color:green'>OK</span>" : "<span style='color:red'>VACÍO/MISSING</span>";
+        // Ocultar password
+        if ($var === 'DB_PASSWORD' && !empty($val)) $val = '******'; 
+        $output .= "<li><strong>$var</strong>: $val ($status)</li>";
+    }
+    $output .= "</ul>";
 
-        // 2. Crear usuario si no existe
-        $userStatus = "";
+    try {
+        // 2. Intentar Conexión PDO Cruda (Copia exacta de cómo Laravel conecta)
+        $output .= "<h3>2. Prueba de Conexión Raw PDO</h3>";
+        
+        $dsn = "pgsql:host=".env('DB_HOST').";port=".env('DB_PORT').";dbname=".env('DB_DATABASE').";sslmode=require";
+        $output .= "<p>Intentando conectar con DSN: <code>$dsn</code> ...</p>";
+        
+        $pdo = new PDO($dsn, env('DB_USERNAME'), env('DB_PASSWORD'));
+        $output .= "<p style='color:green'><strong>¡Conexión PDO Exitosa!</strong></p>";
+
+        // 3. Intentar Migraciones Laravel
+        $output .= "<h3>3. Ejecutando Migraciones (Laravel)</h3>";
+        
+        // Forzar configuración por si acaso la cache estorba
+        config(['database.connections.pgsql.sslmode' => 'require']);
+        
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        $output .= "<pre>" . \Illuminate\Support\Facades\Artisan::output() . "</pre>";
+
+        // 4. Crear usuario
+        $output .= "<h3>4. Creación de Usuario</h3>";
         if (!\App\Models\User::where('email', 'admin@ecodigital.com')->exists()) {
             \App\Models\User::create([
                 'name' => 'Administrador',
                 'email' => 'admin@ecodigital.com',
                 'password' => \Illuminate\Support\Facades\Hash::make('admin123'),
             ]);
-            $userStatus = "Usuario creado exitosamente.";
+            $output .= "<p style='color:green'>Usuario creado exitosamente.</p>";
         } else {
-            $userStatus = "Usuario ya existía.";
+            $output .= "<p style='color:blue'>El usuario ya existe.</p>";
         }
 
-        return "<h1>Diagnóstico de Instalación</h1>" .
-               "<h3>Migraciones:</h3><pre>$migrateOutput</pre>" .
-               "<h3>Usuario:</h3><p>$userStatus</p>" .
-               "<hr><a href='/login'>Ir al Login</a>";
+        $output .= "<hr><a href='/login' style='font-size:20px'><b>IR AL LOGIN</b></a>";
 
     } catch (\Exception $e) {
-        return "<h1>Error Crítico</h1>" .
-               "<p>" . $e->getMessage() . "</p>" .
-               "<h3>Trace:</h3><pre>" . $e->getTraceAsString() . "</pre>";
+        $output .= "<h2 style='color:red'>FALLÓ: " . $e->getMessage() . "</h2>";
+        $output .= "<h4>Stack Trace:</h4><pre>" . $e->getTraceAsString() . "</pre>";
     }
+
+    return $output;
 });
 
 // Rutas Protegidas (Solo usuarios logueados)
