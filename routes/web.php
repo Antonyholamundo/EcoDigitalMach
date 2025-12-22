@@ -16,6 +16,67 @@ Route::get('/', function () {
     return view('logica.index'); 
 });
 
+// DIAGNÓSTICO DE ENTORNO - Verificar configuración de Render
+Route::get('/check-env', function () {
+    $output = "<h1>Diagnóstico de Configuración</h1>";
+    
+    // 1. Variables de entorno
+    $output .= "<h3>1. Variables de Entorno</h3>";
+    $output .= "<table border='1' cellpadding='10' style='border-collapse:collapse'>";
+    $output .= "<tr><th>Variable</th><th>Valor</th><th>Estado</th></tr>";
+    
+    $envVars = [
+        'APP_ENV' => env('APP_ENV'),
+        'APP_KEY' => env('APP_KEY') ? substr(env('APP_KEY'), 0, 20) . '...' : null,
+        'DB_CONNECTION' => env('DB_CONNECTION'),
+        'DB_HOST' => env('DB_HOST'),
+        'DB_PORT' => env('DB_PORT'),
+        'DB_DATABASE' => env('DB_DATABASE'),
+        'DB_USERNAME' => env('DB_USERNAME'),
+        'DB_PASSWORD' => env('DB_PASSWORD') ? '***' . substr(env('DB_PASSWORD'), -4) : null,
+        'DB_SSLMODE' => env('DB_SSLMODE'),
+    ];
+    
+    foreach ($envVars as $key => $value) {
+        $status = !empty($value) ? "<span style='color:green'>✓</span>" : "<span style='color:red'>✗ FALTA</span>";
+        $displayValue = $value ?? '<em>null</em>';
+        $output .= "<tr><td><strong>$key</strong></td><td>$displayValue</td><td>$status</td></tr>";
+    }
+    $output .= "</table>";
+    
+    // 2. Test de conexión
+    $output .= "<h3>2. Test de Conexión a Base de Datos</h3>";
+    try {
+        \Illuminate\Support\Facades\DB::connection()->getPdo();
+        $output .= "<p style='color:green; font-size:1.2em'><strong>✓ CONEXIÓN EXITOSA</strong></p>";
+        
+        // Verificar si existe la tabla users
+        $tablesExist = \Illuminate\Support\Facades\Schema::hasTable('users');
+        $output .= "<p>Tabla 'users' existe: " . ($tablesExist ? "<span style='color:green'>SÍ</span>" : "<span style='color:red'>NO - Ejecuta /install-admin</span>") . "</p>";
+        
+        if ($tablesExist) {
+            $userCount = \Illuminate\Support\Facades\DB::table('users')->count();
+            $output .= "<p>Usuarios en BD: <strong>$userCount</strong></p>";
+        }
+        
+    } catch (\Exception $e) {
+        $output .= "<div style='background:red; color:white; padding:20px;'>";
+        $output .= "<h3>✗ ERROR DE CONEXIÓN</h3>";
+        $output .= "<p>" . $e->getMessage() . "</p>";
+        $output .= "<h4>Posibles causas:</h4>";
+        $output .= "<ul>";
+        $output .= "<li>Variables DB_* no configuradas en Render Dashboard</li>";
+        $output .= "<li>Credenciales de Neon incorrectas</li>";
+        $output .= "<li>Firewall bloqueando la conexión</li>";
+        $output .= "</ul>";
+        $output .= "</div>";
+    }
+    
+    $output .= "<hr><p><a href='/install-admin'>Ir a Instalación</a> | <a href='/test-login'>Test Login</a></p>";
+    
+    return $output;
+});
+
 // RUTA TEMPORAL - Instalación Definitiva (Compatible con cualquier Laravel)
 Route::get('/install-admin', function () {
     $output = "<h1>Instalación de Usuario Admin</h1>";
