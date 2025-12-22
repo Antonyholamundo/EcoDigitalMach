@@ -16,87 +16,75 @@ Route::get('/', function () {
     return view('logica.index'); 
 });
 
-// RUTA TEMPORAL - Diagnóstico PROFUNDO
+// RUTA TEMPORAL - Instalación Definitiva (Compatible con cualquier Laravel)
 Route::get('/install-admin', function () {
-    $output = "<h1>Diagnóstico Profundo de Sistema</h1>";
+    $output = "<h1>Instalación de Usuario Admin</h1>";
     
-    // 1. Verificar Variables de Entorno
-    $envVars = ['DB_CONNECTION', 'DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD'];
-    $output .= "<h3>1. Verificación de Entorno (.env)</h3><ul>";
-    foreach ($envVars as $var) {
-        $val = env($var);
-        $status = !empty($val) ? "<span style='color:green'>OK</span>" : "<span style='color:red'>VACÍO/MISSING</span>";
-        // Ocultar password
-        if ($var === 'DB_PASSWORD' && !empty($val)) $val = '******'; 
-        $output .= "<li><strong>$var</strong>: $val ($status)</li>";
-    }
-    $output .= "</ul>";
-
     try {
-        // 2. Intentar Conexión PDO Cruda (Copia exacta de cómo Laravel conecta)
-        $output .= "<h3>2. Prueba de Conexión Raw PDO</h3>";
-        
-        $dsn = "pgsql:host=".env('DB_HOST').";port=".env('DB_PORT').";dbname=".env('DB_DATABASE').";sslmode=require";
-        $output .= "<p>Intentando conectar con DSN: <code>$dsn</code> ...</p>";
-        
-        $pdo = new PDO($dsn, env('DB_USERNAME'), env('DB_PASSWORD'));
-        $output .= "<p style='color:green'><strong>¡Conexión PDO Exitosa!</strong></p>";
-
-        // 3. Intentar Migraciones Laravel
-        $output .= "<h3>3. Ejecutando Migraciones (Laravel)</h3>";
-        
-        // Forzar configuración por si acaso la cache estorba
-        config(['database.connections.pgsql.sslmode' => 'require']);
-        
+        // 1. Ejecutar migraciones
+        $output .= "<h3>1. Migraciones</h3>";
         \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
         $output .= "<pre>" . \Illuminate\Support\Facades\Artisan::output() . "</pre>";
 
-        // 4. Crear o Actualizar usuario
-        $output .= "<h3>4. Creación/Actualización de Usuario</h3>";
-        $output .= "<p>Laravel Version: " . app()->version() . "</p>";
+        // 2. Crear/Actualizar usuario CON HASH EXPLÍCITO
+        $output .= "<h3>2. Usuario Administrador</h3>";
         
-        // Intentamos PRIMERO asumiendo que el modelo tiene 'hashed' cast
-        $user = \App\Models\User::updateOrCreate(
+        // SOLUCIÓN DEFINITIVA: Usar DB directo para evitar CUALQUIER mutador/cast
+        $hashedPassword = \Illuminate\Support\Facades\Hash::make('admin123');
+        
+        $userId = \Illuminate\Support\Facades\DB::table('users')->updateOrInsert(
             ['email' => 'admin@ecodigital.com'],
             [
                 'name' => 'Administrador',
-                'password' => 'admin123', // Intentamos texto plano primero
+                'email' => 'admin@ecodigital.com',
+                'password' => $hashedPassword,
                 'email_verified_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
             ]
         );
 
-        // VERIFICACIÓN INMEDIATA
-        $freshUser = \App\Models\User::find($user->id);
-        $storedHash = $freshUser->getAttributes()['password']; // Acceder al atributo crudo
-        $isHashed = strlen($storedHash) > 50 && str_starts_with($storedHash, '$2y$');
-        $checkPass = \Illuminate\Support\Facades\Hash::check('admin123', $storedHash);
-
-        $output .= "<ul>";
-        $output .= "<li><strong>Valor guardado (Raw):</strong> " . substr($storedHash, 0, 10) . "... (" . strlen($storedHash) . " chars)</li>";
-        $output .= "<li><strong>¿Parece Hasheado?</strong> " . ($isHashed ? "SÍ" : "NO (Texto Plano)") . "</li>";
-        $output .= "<li><strong>Hash::check('admin123'):</strong> " . ($checkPass ? "<span style='color:green; font-weight:bold'>PASÓ (Correcto)</span>" : "<span style='color:red; font-weight:bold'>FALLÓ</span>") . "</li>";
-        $output .= "</ul>";
-
-        // Si falló, significa que el cast 'hashed' NO funcionó (ej. Laravel 10 con sintaxis de Laravel 11, o modelo defectuoso).
-        // Intentamos corregir MANUALMENTE.
-        if (!$checkPass) {
-             $output .= "<p style='color:orange'><strong>Detectado fallo en auto-hashing. Aplicando Hash::make manual...</strong></p>";
-             $user->password = \Illuminate\Support\Facades\Hash::make('admin123');
-             $user->save();
-             
-             // Re-verificar
-             $freshUser = \App\Models\User::find($user->id);
-             $storedHash = $freshUser->getAttributes()['password'];
-             $checkPass = \Illuminate\Support\Facades\Hash::check('admin123', $storedHash);
-             
-             $output .= "<ul><li><strong>Re-Verificación Hash::check:</strong> " . ($checkPass ? "<span style='color:green'>AHORA SÍ FUNCIONA</span>" : "<span style='color:red'>SIGUE FALLANDO</span>") . "</li></ul>";
+        // 3. VERIFICACIÓN INMEDIATA
+        $output .= "<h3>3. Verificación</h3>";
+        $user = \Illuminate\Support\Facades\DB::table('users')
+            ->where('email', 'admin@ecodigital.com')
+            ->first();
+        
+        if ($user) {
+            $checkResult = \Illuminate\Support\Facades\Hash::check('admin123', $user->password);
+            
+            $output .= "<ul>";
+            $output .= "<li><strong>Email:</strong> " . $user->email . "</li>";
+            $output .= "<li><strong>Hash guardado:</strong> " . substr($user->password, 0, 20) . "...</li>";
+            $output .= "<li><strong>Verificación Hash::check('admin123'):</strong> ";
+            
+            if ($checkResult) {
+                $output .= "<span style='color:green; font-size:1.3em; font-weight:bold'>✓ CORRECTO</span></li>";
+                $output .= "</ul>";
+                $output .= "<div style='background:green; color:white; padding:20px; margin:20px 0; border-radius:10px; text-align:center;'>";
+                $output .= "<h2>¡INSTALACIÓN EXITOSA!</h2>";
+                $output .= "<p>Usuario: <strong>admin@ecodigital.com</strong></p>";
+                $output .= "<p>Contraseña: <strong>admin123</strong></p>";
+                $output .= "</div>";
+            } else {
+                $output .= "<span style='color:red; font-size:1.3em; font-weight:bold'>✗ FALLÓ</span></li>";
+                $output .= "</ul>";
+                $output .= "<div style='background:red; color:white; padding:20px; margin:20px 0;'>";
+                $output .= "<p>ERROR: La contraseña no se verificó correctamente. Contacta soporte técnico.</p>";
+                $output .= "</div>";
+            }
+        } else {
+            $output .= "<p style='color:red'>ERROR: No se pudo crear el usuario</p>";
         }
 
-        $output .= "<hr><a href='/login' style='font-size:20px; background: blue; color: white; padding: 10px; text-decoration: none; border-radius: 5px;'>IR AL LOGIN AHORA</a>";
+        $output .= "<hr><div style='text-align:center'><a href='/login' style='font-size:22px; background:#0d6efd; color:white; padding:15px 40px; text-decoration:none; border-radius:8px; display:inline-block; font-weight:bold;'>IR AL LOGIN →</a></div>";
 
     } catch (\Exception $e) {
-        $output .= "<h2 style='color:red'>FALLÓ: " . $e->getMessage() . "</h2>";
-        $output .= "<h4>Stack Trace:</h4><pre>" . $e->getTraceAsString() . "</pre>";
+        $output .= "<div style='background:#dc3545; color:white; padding:20px; margin:20px 0;'>";
+        $output .= "<h2>Error Crítico</h2>";
+        $output .= "<p>" . $e->getMessage() . "</p>";
+        $output .= "<pre>" . $e->getTraceAsString() . "</pre>";
+        $output .= "</div>";
     }
 
     return $output;
