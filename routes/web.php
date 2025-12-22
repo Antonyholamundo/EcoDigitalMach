@@ -16,6 +16,23 @@ Route::get('/', function () {
     return view('logica.index'); 
 });
 
+// RUTA TEMPORAL - Solo para crear el usuario si no tienes acceso a Shell
+Route::get('/install-admin', function () {
+    try {
+        if (!\App\Models\User::where('email', 'admin@ecodigital.com')->exists()) {
+            \App\Models\User::create([
+                'name' => 'Administrador',
+                'email' => 'admin@ecodigital.com',
+                'password' => \Illuminate\Support\Facades\Hash::make('admin123'),
+            ]);
+            return 'Usuario Administrador creado correctamente. <a href="/login">Ir al Login</a>';
+        }
+        return 'El usuario Administrador YA existe. <a href="/login">Ir al Login</a>';
+    } catch (\Exception $e) {
+        return 'Error: ' . $e->getMessage();
+    }
+});
+
 // Rutas Protegidas (Solo usuarios logueados)
 Route::middleware('auth')->group(function () {
     
