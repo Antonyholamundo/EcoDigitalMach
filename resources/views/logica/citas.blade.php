@@ -33,12 +33,12 @@
         <tbody class="bg-white">
           @forelse ($citas as $cita)
           <tr>
-            <td>{{ $cita->paciente }}</td>
-            <td>{{ $cita->fecha }}</td>
-            <td>{{ $cita->tipo }}</td>
-            <td>{{ $cita->hora }}</td>
-            <td>${{ number_format($cita->precio, 2) }}</td>
-            <td>
+            <td data-label="Paciente">{{ $cita->paciente }}</td>
+            <td data-label="Fecha">{{ $cita->fecha }}</td>
+            <td data-label="Tipo">{{ $cita->tipo }}</td>
+            <td data-label="Hora">{{ $cita->hora }}</td>
+            <td data-label="Precio">${{ number_format($cita->precio, 2) }}</td>
+            <td data-label="Estado">
               <form action="{{ route('citas.toggleStatus', $cita->id) }}" method="POST" id="form-status-{{ $cita->id }}">
                   @csrf
                   <div class="form-check form-switch">
@@ -55,7 +55,7 @@
                   </div>
               </form>
             </td>
-            <td>
+            <td data-label="Acciones">
               <button
                 class="btn btn-warning btn-sm text-white btn-editar me-1"
                 data-id="{{ $cita->id }}"
@@ -107,11 +107,11 @@
               <input id="nombre-paciente" name="paciente" type="text" class="form-control form-control-sm" required>
             </div>
             <div class="row">
-              <div class="col-6 mb-2">
+              <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Fecha</label>
                 <input type="date" name="fecha" class="form-control form-control-sm" required>
               </div>
-              <div class="col-6 mb-2">
+              <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Hora</label>
                 <input type="time" name="hora" class="form-control form-control-sm" required>
               </div>
@@ -127,11 +127,11 @@
               </select>
             </div>
             <div class="row">
-              <div class="col-6 mb-2">
+              <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Precio</label>
                 <input type="number" name="precio" class="form-control form-control-sm" step="0.01" required>
               </div>
-              <div class="col-6 mb-2">
+              <div class="col-12 col-md-6 mb-2">
                 <label class="form-label">Estado</label>
                 <select name="estado" class="form-select form-select-sm" required>
                   <option value="">Seleccione</option>
@@ -167,11 +167,11 @@
                <input id="edit-nombre-paciente" name="paciente" type="text" class="form-control form-control-sm" required>
             </div>
             <div class="row">
-                <div class="col-6 mb-2">
+                <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Fecha</label>
                     <input id="edit-fecha-cita" name="fecha" type="date" class="form-control form-control-sm" required>
                 </div>
-                <div class="col-6 mb-2">
+                <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Hora</label>
                     <input id="edit-hora-cita" name="hora" type="time" class="form-control form-control-sm" required>
                 </div>
@@ -187,11 +187,11 @@
                 </select>
             </div>
             <div class="row">
-                <div class="col-6 mb-2">
+                <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Precio</label>
                     <input id="edit-precio" name="precio" type="number" step="0.01" class="form-control form-control-sm" required>
                 </div>
-                <div class="col-6 mb-2">
+                <div class="col-12 col-md-6 mb-2">
                     <label class="form-label">Estado</label>
                     <select id="edit-estado-paciente" name="estado" class="form-select form-select-sm" required>
                       <option value="">Seleccione</option>

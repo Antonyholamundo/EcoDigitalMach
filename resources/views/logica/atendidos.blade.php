@@ -27,12 +27,12 @@
         <tbody class="bg-white">
           @forelse ($citas as $cita)
           <tr>
-            <td>{{ $cita->paciente }}</td>
-            <td>{{ $cita->fecha }}</td>
-            <td>{{ $cita->tipo }}</td>
-            <td>{{ $cita->hora }}</td>
-            <td>${{ number_format($cita->precio, 2) }}</td>
-            <td>
+            <td data-label="Paciente">{{ $cita->paciente }}</td>
+            <td data-label="Fecha">{{ $cita->fecha }}</td>
+            <td data-label="Tipo">{{ $cita->tipo }}</td>
+            <td data-label="Hora">{{ $cita->hora }}</td>
+            <td data-label="Precio">${{ number_format($cita->precio, 2) }}</td>
+            <td data-label="Estado">
               <form action="{{ route('citas.toggleStatus', $cita->id) }}" method="POST" id="form-status-{{ $cita->id }}">
                   @csrf
                   <div class="form-check form-switch">
@@ -45,7 +45,7 @@
                   </div>
               </form>
             </td>
-            <td>
+            <td data-label="Acciones">
                <form action="{{ route('citas.destroy', $cita->id) }}" method="POST" class="d-inline"
                 onsubmit="return confirm('¿Seguro que quieres eliminar este historial?');">
                 @csrf

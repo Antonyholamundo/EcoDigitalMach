@@ -31,16 +31,16 @@
         <tbody class="bg-white">
           @forelse ($pacientes as $paciente)
           <tr>
-            <td>{{ $paciente->nombres }}</td>
-            <td>{{ $paciente->apellidos }}</td>
-            <td>{{ $paciente->cedula }}</td>
-            <td>{{ $paciente->telefono }}</td>
-            <td>{{ $paciente->email }}</td>
-            <td>{{ ucfirst($paciente->sexo) }}</td>
-            <td>{{ $paciente->fecha_nacimiento }}</td>
-            <td>{{ $paciente->tipo_ecografia }}</td>
-            <td>${{ number_format($paciente->precio, 2) }}</td>
-            <td>
+            <td data-label="Nombres">{{ $paciente->nombres }}</td>
+            <td data-label="Apellidos">{{ $paciente->apellidos }}</td>
+            <td data-label="Cédula">{{ $paciente->cedula }}</td>
+            <td data-label="Teléfono">{{ $paciente->telefono }}</td>
+            <td data-label="Email">{{ $paciente->email }}</td>
+            <td data-label="Sexo">{{ ucfirst($paciente->sexo) }}</td>
+            <td data-label="Fecha Nac.">{{ $paciente->fecha_nacimiento }}</td>
+            <td data-label="Tipo Eco.">{{ $paciente->tipo_ecografia }}</td>
+            <td data-label="Precio">${{ number_format($paciente->precio, 2) }}</td>
+            <td data-label="Acciones">
               <button
                 class="btn btn-warning btn-sm me-1 text-white btn-editar"
                 data-id="{{ $paciente->id }}"
@@ -90,27 +90,27 @@
           </div>
           <div class="modal-body">
             <div class="row g-2">
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <label class="form-label">Nombres</label>
                 <input type="text" class="form-control" name="nombres" required>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <label class="form-label">Apellidos</label>
                 <input type="text" class="form-control" name="apellidos" required>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <label class="form-label">Cédula</label>
                 <input type="text" class="form-control" name="cedula" required>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <label class="form-label">Teléfono</label>
                 <input type="text" class="form-control" name="telefono" required>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <label class="form-label">Email</label>
                 <input type="email" class="form-control" name="email">
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <label class="form-label">Sexo</label>
                 <select class="form-select" name="sexo" required>
                   <option value="">Seleccione</option>
@@ -118,11 +118,11 @@
                   <option value="femenino">Femenino</option>
                 </select>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <label class="form-label">Fecha de Nacimiento</label>
                 <input type="date" class="form-control" name="fecha_nacimiento" required>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <label class="form-label">Tipo de Ecografía</label>
                 <select class="form-select" name="tipo_ecografia" required>
                   <option value="">Seleccione</option>
@@ -132,7 +132,7 @@
                   <option value="Tiroidea">Tiroidea</option>
                 </select>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <label class="form-label">Precio</label>
                 <input type="number" step="0.01" class="form-control" name="precio" required>
               </div>
@@ -160,27 +160,27 @@
           </div>
           <div class="modal-body">
             <div class="row g-2">
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <label class="form-label">Nombres</label>
                 <input type="text" id="edit-nombres" name="nombres" class="form-control" required>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <label class="form-label">Apellidos</label>
                 <input type="text" id="edit-apellidos" name="apellidos" class="form-control" required>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <label class="form-label">Cédula</label>
                 <input type="text" id="edit-cedula" name="cedula" class="form-control" required>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <label class="form-label">Teléfono</label>
                 <input type="text" id="edit-telefono" name="telefono" class="form-control" required>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <label class="form-label">Email</label>
                 <input type="email" id="edit-email" name="email" class="form-control">
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <label class="form-label">Sexo</label>
                 <select id="edit-sexo" name="sexo" class="form-select" required>
                   <option value="">Seleccione</option>
@@ -188,11 +188,11 @@
                   <option value="femenino">Femenino</option>
                 </select>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <label class="form-label">Fecha de Nacimiento</label>
                 <input type="date" id="edit-fecha_nacimiento" name="fecha_nacimiento" class="form-control" required>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <label class="form-label">Tipo de Ecografía</label>
                 <select id="edit-tipo_ecografia" name="tipo_ecografia" class="form-select" required>
                   <option value="">Seleccione</option>
@@ -202,7 +202,7 @@
                   <option value="Tiroidea">Tiroidea</option>
                 </select>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <label class="form-label">Precio</label>
                 <input type="number" step="0.01" id="edit-precio" name="precio" class="form-control" required>
               </div>
